@@ -31,6 +31,13 @@ def parse_ddmmyyyy(date_str):
 
 def extract_info_from_pdf(pdf_path):
     results = []
+    subpattern = r".*?([\d.,']+)\s*kWh.*?x\s*([\d.,']+)\s*=\s*([\d.,']+)\s*([\d.,']+)" \
+        .replace(r"\s", f"[\\s{chr(65535)}]")
+    patterns = {
+        "Energy": re.compile(r"énergie" + subpattern, re.DOTALL),
+        "Origin": re.compile(r"garantie" + subpattern, re.DOTALL),
+    }
+
     with pdfplumber.open(pdf_path) as pdf:
         if len(pdf.pages) < 2:
             return results
@@ -39,11 +46,6 @@ def extract_info_from_pdf(pdf_path):
         if not text:
             return results
         # Try to find the main line
-        subpattern = r".*?([\d.,']+)\s*kWh.*?x\s*([\d.,']+)\s*=\s*([\d.,']+)\s*([\d.,']+)"
-        patterns = {
-            "Energy": re.compile(r"Achat.?d'énergie"+subpattern, re.DOTALL),
-            "Origin": re.compile(r"Achat.?de.?garantie"+subpattern, re.DOTALL),
-        }
 
             # Find date range line
         date_pattern = re.compile(r"(\d{2}\.\d{2}\.\d{4})\s*au\s*(\d{2}\.\d{2}\.\d{4})")
@@ -83,7 +85,7 @@ def extract_info_from_pdf(pdf_path):
 
 def main():
     folder = r'C:\Users\Philippe\OneDrive - RL&Kids\Documents\Maisons\Suivi Solaire+Chauffage\Factures SIG' # os.path.dirname(os.path.abspath(__file__))
-    files = [f for f in os.listdir(folder) if f.startswith('Production 2024-07') and f.endswith('.pdf')]
+    files = [f for f in os.listdir(folder) if f.startswith('Production 2025-01') and f.endswith('.pdf')]
     all_results = []
     for file in files:
         path = os.path.join(folder, file)
