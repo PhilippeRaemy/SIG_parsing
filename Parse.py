@@ -1,3 +1,5 @@
+import argparse
+
 import pdfplumber
 import re
 import os
@@ -32,7 +34,7 @@ def parse_ddmmyyyy(date_str):
 def compilePattern(input):
     return re.compile(input.replace(r" ", r"\s"), re.DOTALL | re.IGNORECASE)
 
-def extract_info_from_pdf(pdf_path):
+def parse_solar_sheet(pdf_path):
     results = []
     subpattern = r".*?([\d.,']+) *kWh.*?x *([\d.,']+) *= *([\d.,']+) *([\d.,']+)([^\d]*(\d{2}\.\d{2}\.\d{4}) *au *(\d{2}\.\d{2}\.\d{4}))?"
     # Fallback: get header dates
@@ -83,7 +85,7 @@ def main():
     all_results = []
     for file in files:
         path = os.path.join(folder, file)
-        all_results.extend(extract_info_from_pdf(path))
+        all_results.extend(parse_solar_sheet(path))
     print(json.dumps(all_results, ensure_ascii=False, indent=2))
     with open(os.path.join(folder, f"production_{datetime.now().strftime('%Y-%m-%d')}.json"),'w') as fi:
         fi.write(json.dumps(all_results, ensure_ascii=False, indent=2))
@@ -91,3 +93,15 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+parser = argparse.ArgumentParser(description="Parse solar production sheets and invoices from Services Industriels Genève (SIG).")
+parser.add_argument('pdf_path', type=str, help='Path to the PDF file to parse.')
+parser.add_argument('--output', '-o', type=str, help='Path to the output file. Default is stdout.', default=None)
+parser.add_argument('--output-format', '-f', type=str, default='json', help='Output format.')
+parser.add_argument('--solar', '-s', action='store_true', help='Parse solar production sheets.')
+parser.add_argument('--invoice', '-i', action='store_true', help='Parse invoices.')
+parser.add_argument('--output-file-format', '-f', type=str, default='json', help='Output format.')
+parser.add_argument('--solar-sheet-prefix', type=str, help='Root name of solar sheet files.', default='Production')
+parser.add_argument('--invoice-sheet-prefix', type=str, help='Root name of invoice files.', default='Facture')
+
+args = parser.parse_args()
