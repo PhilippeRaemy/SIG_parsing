@@ -29,68 +29,65 @@ def parse_ddmmyyyy(date_str):
     except Exception:
         return None
 
+def compilePattern(input):
+    return re.compile(input.replace(r" ", r"\s"), re.DOTALL | re.IGNORECASE)
+
 def extract_info_from_pdf(pdf_path):
     results = []
-    subpattern = r".*?([\d.,']+)\s*kWh.*?x\s*([\d.,']+)\s*=\s*([\d.,']+)\s*([\d.,']+)" \
-        .replace(r"\s", f"[\\s{chr(65535)}]")
+    subpattern = r".*?([\d.,']+) *kWh.*?x *([\d.,']+) *= *([\d.,']+) *([\d.,']+)([^\d]*(\d{2}\.\d{2}\.\d{4}) *au *(\d{2}\.\d{2}\.\d{4}))?"
+    # Fallback: get header dates
+    header_pattern = compilePattern(r"Index relevé Précédent.*(\d{2} +[\w\.]+ +\d{2}) +(\d{2} +[\w\.]+ +\d{2})")
+
     patterns = {
-        "Energy": re.compile(r"énergie" + subpattern, re.DOTALL),
-        "Origin": re.compile(r"garantie" + subpattern, re.DOTALL),
+        "Energy": compilePattern(r"énergie" + subpattern),
+        "Origin": compilePattern(r"garantie" + subpattern),
     }
 
     with pdfplumber.open(pdf_path) as pdf:
-        if len(pdf.pages) < 2:
-            return results
-        page = pdf.pages[1]
-        text = page.extract_text()
-        if not text:
-            return results
-        # Try to find the main line
-
-            # Find date range line
-        date_pattern = re.compile(r"(\d{2}\.\d{2}\.\d{4})\s*au\s*(\d{2}\.\d{2}\.\d{4})")
-        # Fallback: get header dates
-        header_pattern = re.compile(r"Index relevé Précédent.*(\d{2} \w+ \d{2}).*(\d{2} \w+ \d{2})", re.DOTALL)
-
-        # Find all matches for energy purchase
-        for item, pattern in patterns.items():
-            for match in pattern.finditer(text):
-                qty, price, chf, vta = [x.replace(',', '.').replace("'", "") for x in match.groups()]
-                # Try to find the date range above this match
-                before = text[:match.start()]
-                date_match = list(date_pattern.finditer(before))
-                if date_match:
-                    date_from, date_to = date_match[-1].groups()
-                    date_from_iso = parse_ddmmyyyy(date_from)
-                    date_to_iso = parse_ddmmyyyy(date_to)
-                else:
-                    # Fallback: get header dates from the top of the page
-                    header_match = header_pattern.search(text)
-                    if header_match:
-                        date_from_iso = parse_french_date(header_match.group(1))
-                        date_to_iso = parse_french_date(header_match.group(2))
+        for page  in pdf.pages:
+            text = page.extract_text()
+            if not text:
+                continue
+            text = text.replace('\uffff', ' ')
+            # Find all matches for energy purchase
+            for item, pattern in patterns.items():
+                for match in pattern.finditer(text):
+                    qty, price, chf, vta, _, date_from, date_to = [x.replace(',', '.').replace("'", "") if x else None for x in match.groups()]
+                    # Try to find the date range above this match
+                    if date_from and date_to:
+                        date_from_iso = parse_ddmmyyyy(date_from)
+                        date_to_iso = parse_ddmmyyyy(date_to)
                     else:
-                        date_from_iso = date_to_iso = None
-                results.append({
-                    "file": pdf_path,
-                    "item": item,
-                    "date_from": date_from_iso,
-                    "date_to": date_to_iso,
-                    "Qyt": float(qty),
-                    "price": float(price),
-                    "CHF": float(chf),
-                    "VTA": float(vta)
-                })
+                        # Fallback: get header dates from the top of the page
+                        header_match = header_pattern.search(text)
+                        if header_match:
+                            date_from_iso = parse_french_date(header_match.group(2))
+                            date_to_iso = parse_french_date(header_match.group(1))
+                        else:
+                            date_from_iso = date_to_iso = None
+                    results.append({
+                        "file": pdf_path,
+                        "item": item,
+                        "date_from": date_from_iso,
+                        "date_to": date_to_iso,
+                        "Qty": float(qty),
+                        "price": float(price),
+                        "CHF": float(chf),
+                        "TVA": float(vta)
+                    })
     return results
 
 def main():
     folder = r'C:\Users\Philippe\OneDrive - RL&Kids\Documents\Maisons\Suivi Solaire+Chauffage\Factures SIG' # os.path.dirname(os.path.abspath(__file__))
-    files = [f for f in os.listdir(folder) if f.startswith('Production 2025-01') and f.endswith('.pdf')]
+    files = [f for f in os.listdir(folder) if f.startswith('Production') and f.endswith('.pdf')]
     all_results = []
     for file in files:
         path = os.path.join(folder, file)
         all_results.extend(extract_info_from_pdf(path))
     print(json.dumps(all_results, ensure_ascii=False, indent=2))
+    with open(os.path.join(folder, f"production_{datetime.now().strftime('%Y-%m-%d')}.json"),'w') as fi:
+        fi.write(json.dumps(all_results, ensure_ascii=False, indent=2))
+
 
 if __name__ == "__main__":
     main()
