@@ -90,27 +90,28 @@ def parse_invoice(pdf_path):
     results = []
     date_pattern = r"((?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
     power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
-    water_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>jours|m3).*?x *(?P<price>[\d.,']+)? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*"
+    water_price = r"[^\d]*?(?P<qty>[\d.,']+) *(?P<uom>jours|m3) (x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*"
     # Fallback: get header dates
     header_pattern = compilePattern(
-        r"Index relevé Précédent.*(?P<dfrom>\d{2} +[\w\.]+ +\d{2}) +(?P<dto>\d{2} +[\w\.]+ +\d{2})")
+        r"Index relevé Précédent.*(?P<dfrom>\d{2} +[\w\.]+ +\d{2}) +(?P<dto>\d{2} +[\w\.] +\d{2})")
 
     patterns = {
         "Peak"        : compilePattern(r"pleines" + power_price),
         "Offpeak"     : compilePattern(r"douces" + power_price),
         "Collectivity": compilePattern(r"collectivités +publiques +([?P<chf>\d.,']+) *(?P<tva>[\d.,'])[^\d]*"
-                                       + date_pattern + "[^\d]*([?P<price>\d.,']+) *%"),
-        "Federal"     : compilePattern(r"fédéral" + power_price)
+                                       + date_pattern + r"[^\d]*([?P<price>\d.,']+) *%"),
+        "FederalTaxPower": compilePattern(r"fédéral" + power_price),
+        "FederalTaxWater": compilePattern(r"fédérale" + water_price),
     }
     for label, category in  [
-        ("Production et distribution Eau Potable", "Eau"),
-        ("Taxe d'épuration", "Epuration"),
-        ("Taxe d'utilisation", "Réseau"),
+        ("Production et distribution Eau Potable", "Water"),
+        ("Taxe d'épuration", "Cleansing"),
+        ("Taxe d'utilisation", "WaterNet"),
     ]:
         patterns.update({
-            "Forfait_"    + category : compilePattern(".*"+ label + r".*Forfait +de +la +tranche[^\d]+" + water_price),
-            "Forfait_m3_" + category : compilePattern(".*"+ label + r".*Forfait.*m3 +compris +dans +le +forfait +" + water_price),
-            "m3"          + category : compilePattern(".*"+ label + r".*Forfait.*m3 +dépassant +le +forfait +" + water_price)
+            "Forfait_"    + category : compilePattern(".*"+ label + r".*?Forfait +de +la +tranche +" + water_price),
+            "Forfait_m3_" + category : compilePattern(".*"+ label + r".*?Forfait.*?m3 +compris +dans +le +forfait +" + water_price),
+            "m3"          + category : compilePattern(".*"+ label + r".*?Forfait.*?m3 +dépassant +le +forfait +" + water_price)
             }
         )
 
