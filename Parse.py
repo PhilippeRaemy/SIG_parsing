@@ -89,18 +89,31 @@ def parse_solar_sheet(pdf_path):
 def parse_invoice(pdf_path):
     results = []
     date_pattern = r"((?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
-    subpattern = r" *?(?P<qty>[\d.,']+) *kWh.*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
+    power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
+    water_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>jours|m3).*?x *(?P<price>[\d.,']+)? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*"
     # Fallback: get header dates
     header_pattern = compilePattern(
         r"Index relevé Précédent.*(?P<dfrom>\d{2} +[\w\.]+ +\d{2}) +(?P<dto>\d{2} +[\w\.]+ +\d{2})")
 
     patterns = {
-        "Peak"        : compilePattern(r"pleines" + subpattern),
-        "Offpeak"     : compilePattern(r"douces" + subpattern),
+        "Peak"        : compilePattern(r"pleines" + power_price),
+        "Offpeak"     : compilePattern(r"douces" + power_price),
         "Collectivity": compilePattern(r"collectivités +publiques +([?P<chf>\d.,']+) *(?P<tva>[\d.,'])[^\d]*"
                                        + date_pattern + "[^\d]*([?P<price>\d.,']+) *%"),
-        "Federal"     : compilePattern(r"fédéral" + subpattern),
+        "Federal"     : compilePattern(r"fédéral" + power_price)
     }
+    for label, category in  [
+        ("Production et distribution Eau Potable", "Eau"),
+        ("Taxe d'épuration", "Epuration"),
+        ("Taxe d'utilisation", "Réseau"),
+    ]:
+        patterns.update({
+            "Forfait_"    + category : compilePattern(".*"+ label + r".*Forfait +de +la +tranche[^\d]+" + water_price),
+            "Forfait_m3_" + category : compilePattern(".*"+ label + r".*Forfait.*m3 +compris +dans +le +forfait +" + water_price),
+            "m3"          + category : compilePattern(".*"+ label + r".*Forfait.*m3 +dépassant +le +forfait +" + water_price)
+            }
+        )
+
     xfloat = lambda x: float(x.replace(',', '.').replace("'", "")) if x else None
 
     with pdfplumber.open(pdf_path) as pdf:
@@ -123,6 +136,7 @@ def parse_invoice(pdf_path):
                 for match in pattern.finditer(text):
                     groupdict = match.groupdict()
                     qty = groupdict.get('qty')
+                    uom = groupdict.get('uom')
                     price = groupdict.get('price')
                     chf = groupdict.get('chf')
                     tva = groupdict.get('tva')
@@ -142,6 +156,7 @@ def parse_invoice(pdf_path):
                         "date_from": date_from_iso,
                         "date_to"  : date_to_iso,
                         "Qty"      : xfloat(qty),
+                        "Uom"      : uom,
                         "price"    : xfloat(price),
                         "CHF"      : xfloat(chf),
                         "TVA"      : xfloat(tva)
