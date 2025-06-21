@@ -92,28 +92,29 @@ def parse_invoice(pdf_path):
     power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
     water_price = r"[^\d]*?(?P<qty>[\d.,']+) *(?P<uom>jours|m3) (x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*"
     # Fallback: get header dates
-    header_pattern = compilePattern(
-        r"Index relevé Précédent.*(?P<dfrom>\d{2} +[\w\.]+ +\d{2}) +(?P<dto>\d{2} +[\w\.] +\d{2})")
+    summary_date_pattern = compilePattern(
+        r"période du (?P<dfrom>\d\d\.\d\d\.\d\d\d\d) +au +(?P<dto>\d\d\.\d\d\.\d\d\d\d)")
+    header_date_pattern = compilePattern(
+        r"Index +relevé +Précédent.*(?P<dfrom>\d{2} +[\w\.]+ +\d{2}) +(?P<dto>\d{2} +[\w\.]+ +\d{2})")
 
-    patterns = {
-        "Peak"        : compilePattern(r"pleines" + power_price),
-        "Offpeak"     : compilePattern(r"douces" + power_price),
-        "Collectivity": compilePattern(r"collectivités +publiques +([?P<chf>\d.,']+) *(?P<tva>[\d.,'])[^\d]*"
-                                       + date_pattern + r"[^\d]*([?P<price>\d.,']+) *%"),
-        "FederalTaxPower": compilePattern(r"fédéral" + power_price),
-        "FederalTaxWater": compilePattern(r"fédérale" + water_price),
-    }
+    patterns = [
+        ("Power", "Peak"        , compilePattern(r"pleines" + power_price)),
+        ("Power", "Offpeak"     , compilePattern(r"douces" + power_price)),
+        ("Power", "Collectivity", compilePattern(r"collectivités +publiques +([?P<chf>\d.,']+) *(?P<tva>[\d.,'])[^\d]*"
+                                       + date_pattern + r"[^\d]*([?P<price>\d.,']+) *%")),
+        ("Power", "FederalTax", compilePattern(r"fédéral" + power_price)),
+        ("Water", "FederalTax", compilePattern(r"fédérale" + water_price)),
+    ]
     for label, category in  [
         ("Production et distribution Eau Potable", "Water"),
         ("Taxe d'épuration", "Cleansing"),
         ("Taxe d'utilisation", "WaterNet"),
     ]:
-        patterns.update({
-            "Forfait_"    + category : compilePattern(".*"+ label + r".*?Forfait +de +la +tranche +" + water_price),
-            "Forfait_m3_" + category : compilePattern(".*"+ label + r".*?Forfait.*?m3 +compris +dans +le +forfait +" + water_price),
-            "m3"          + category : compilePattern(".*"+ label + r".*?Forfait.*?m3 +dépassant +le +forfait +" + water_price)
-            }
-        )
+        patterns+=[
+            ("Water", "Forfait_"    + category, compilePattern(".*"+ label + r".*?Forfait +de +la +tranche +" + water_price)),
+            ("Water", "Forfait_m3_" + category, compilePattern(".*"+ label + r".*?Forfait.*?m3 +compris +dans +le +forfait +" + water_price)),
+            ("Water", "m3"          + category, compilePattern(".*"+ label + r".*?Forfait.*?m3 +dépassant +le +forfait +" + water_price))
+            ]
 
     xfloat = lambda x: float(x.replace(',', '.').replace("'", "")) if x else None
 
@@ -126,23 +127,23 @@ def parse_invoice(pdf_path):
             print(text)
             print('-' * 50)
             # Find all matches for energy purchase
-            header_match = header_pattern.search(text)
+            header_match = header_date_pattern.search(text)
             if header_match:
                 header_date_from = parse_french_date(header_match.group(2))
                 header_date_to = parse_french_date(header_match.group(1))
             else:
                 header_date_from = header_date_to = None
 
-            for item, pattern in patterns.items():
+            for commodity, item, pattern in patterns:
                 for match in pattern.finditer(text):
-                    groupdict = match.groupdict()
-                    qty = groupdict.get('qty')
-                    uom = groupdict.get('uom')
-                    price = groupdict.get('price')
-                    chf = groupdict.get('chf')
-                    tva = groupdict.get('tva')
-                    date_from = groupdict.get('dfrom')
-                    date_to = groupdict.get('dto')
+                    group_dict = match.groupdict()
+                    qty = group_dict.get('qty')
+                    uom = group_dict.get('uom')
+                    price = group_dict.get('price')
+                    chf = group_dict.get('chf')
+                    tva = group_dict.get('tva')
+                    date_from = group_dict.get('dfrom')
+                    date_to = group_dict.get('dto')
                     # Try to find the date range above this match
                     if date_from and date_to:
                         date_from_iso = parse_ddmmyyyy(date_from)
@@ -156,6 +157,7 @@ def parse_invoice(pdf_path):
                         "item"     : item,
                         "date_from": date_from_iso,
                         "date_to"  : date_to_iso,
+                        "commodity": commodity,
                         "Qty"      : xfloat(qty),
                         "Uom"      : uom,
                         "price"    : xfloat(price),
