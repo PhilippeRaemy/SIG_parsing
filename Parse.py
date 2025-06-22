@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import re
+import sys
 from datetime import datetime
 
 import pdfplumber
@@ -26,7 +27,6 @@ def parse_french_date(date_str):
         return f"{year}-{month_num.zfill(2)}-{day.zfill(2)}"
     return None
 
-
 def parse_ddmmyyyy(date_str):
     # Example: '28.09.2024' -> '2024-09-28'
     try:
@@ -34,6 +34,9 @@ def parse_ddmmyyyy(date_str):
     except Exception:
         return None
 
+def parse_date(date_str):
+    parsed = parse_french_date(date_str)
+    return parsed if parsed else parse_ddmmyyyy(date_str)
 
 def compilePattern(input):
     return re.compile(input.replace(r" ", r"\s"), re.DOTALL | re.IGNORECASE)
@@ -63,14 +66,14 @@ def parse_solar_sheet(pdf_path):
                                                                    for x in match.groups()]
                     # Try to find the date range above this match
                     if date_from and date_to:
-                        date_from_iso = parse_ddmmyyyy(date_from)
-                        date_to_iso = parse_ddmmyyyy(date_to)
+                        date_from_iso = parse_date(date_from)
+                        date_to_iso = parse_date(date_to)
                     else:
                         # Fallback: get header dates from the top of the page
                         header_match = header_pattern.search(text)
                         if header_match:
-                            date_from_iso = parse_french_date(header_match.group(2))
-                            date_to_iso = parse_french_date(header_match.group(1))
+                            date_from_iso = parse_date(header_match.group(2))
+                            date_to_iso = parse_date(header_match.group(1))
                         else:
                             date_from_iso = date_to_iso = None
                     results.append({
@@ -90,34 +93,38 @@ def parse_invoice(pdf_path):
     results = []
     date_pattern = r"((?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
     power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
-    water_price = r"[^\d]*?(?P<qty>[\d.,']+) *(?P<uom>jours|m3) (x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*"
+    water_price = r"[^\d]*?(?P<qty>[\d.,']+) *(?P<uom>jours|m3) (x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
     # Fallback: get header dates
     summary_date_pattern = compilePattern(
-        r"période du (?P<dfrom>\d\d\.\d\d\.\d\d\d\d) +au +(?P<dto>\d\d\.\d\d\.\d\d\d\d)")
+        r"période +:? *du (?P<dfrom>\d\d\.\d\d\.\d\d\d\d) +au +(?P<dto>\d\d\.\d\d\.\d\d\d\d)")
     header_date_pattern = compilePattern(
         r"Index +relevé +Précédent.*(?P<dfrom>\d{2} +[\w\.]+ +\d{2}) +(?P<dto>\d{2} +[\w\.]+ +\d{2})")
 
     patterns = [
-        ("Power", "Peak"        , compilePattern(r"pleines" + power_price)),
-        ("Power", "Offpeak"     , compilePattern(r"douces" + power_price)),
+        ("Power", "Peak", compilePattern(r"pleines" + power_price)),
+        ("Power", "Offpeak", compilePattern(r"douces" + power_price)),
         ("Power", "Collectivity", compilePattern(r"collectivités +publiques +([?P<chf>\d.,']+) *(?P<tva>[\d.,'])[^\d]*"
-                                       + date_pattern + r"[^\d]*([?P<price>\d.,']+) *%")),
+                                                 + date_pattern + r"[^\d]*([?P<price>\d.,']+) *%")),
         ("Power", "FederalTax", compilePattern(r"fédéral" + power_price)),
         ("Water", "FederalTax", compilePattern(r"fédérale" + water_price)),
     ]
-    for label, category in  [
+    for label, category in [
         ("Production et distribution Eau Potable", "Water"),
         ("Taxe d'épuration", "Cleansing"),
         ("Taxe d'utilisation", "WaterNet"),
     ]:
-        patterns+=[
-            ("Water", "Forfait_"    + category, compilePattern(".*"+ label + r".*?Forfait +de +la +tranche +" + water_price)),
-            ("Water", "Forfait_m3_" + category, compilePattern(".*"+ label + r".*?Forfait.*?m3 +compris +dans +le +forfait +" + water_price)),
-            ("Water", "m3"          + category, compilePattern(".*"+ label + r".*?Forfait.*?m3 +dépassant +le +forfait +" + water_price))
-            ]
+        patterns += [
+            ("Water", "Forfait_" + category,
+             compilePattern(".*" + label + r".*?Forfait +de +la +tranche +" + water_price)),
+            ("Water", "Forfait_m3_" + category,
+             compilePattern(".*" + label + r".*?Forfait.*?m3 +compris +dans +le +forfait +" + water_price)),
+            ("Water", "m3" + category,
+             compilePattern(".*" + label + r".*?Forfait.*?m3 +dépassant +le +forfait +" + water_price))
+        ]
 
     xfloat = lambda x: float(x.replace(',', '.').replace("'", "")) if x else None
 
+    header_date_from = header_date_to = None
     with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
             text = page.extract_text()
@@ -128,11 +135,13 @@ def parse_invoice(pdf_path):
             print('-' * 50)
             # Find all matches for energy purchase
             header_match = header_date_pattern.search(text)
-            if header_match:
-                header_date_from = parse_french_date(header_match.group(2))
-                header_date_to = parse_french_date(header_match.group(1))
-            else:
-                header_date_from = header_date_to = None
+            summary_date_match = summary_date_pattern.search(text)
+            header_dic = header_match.groupdict() if header_match \
+                else summary_date_match.groupdict() if summary_date_match \
+                else None
+            if header_dic:
+                header_date_from = parse_date(header_dic['dfrom'])
+                header_date_to = parse_date(header_dic['dto'])
 
             for commodity, item, pattern in patterns:
                 for match in pattern.finditer(text):
@@ -146,12 +155,14 @@ def parse_invoice(pdf_path):
                     date_to = group_dict.get('dto')
                     # Try to find the date range above this match
                     if date_from and date_to:
-                        date_from_iso = parse_ddmmyyyy(date_from)
-                        date_to_iso = parse_ddmmyyyy(date_to)
+                        date_from_iso = parse_date(date_from)
+                        date_to_iso = parse_date(date_to)
                     else:
                         # Fallback: get header dates from the top of the page
                         date_from_iso = header_date_from
                         date_to_iso = header_date_to
+                    if not date_to_iso or not date_from_iso:
+                        print('Dates not found', file=sys.stderr)
                     results.append({
                         "file"     : pdf_path,
                         "item"     : item,
@@ -167,7 +178,7 @@ def parse_invoice(pdf_path):
     return results
 
 
-def main(folder, filename, function, output, format):
+def run(folder, filename, function, output, format):
     file_re = re.compile(f"^{filename.replace('*', '.*').replace('?', '.')}$", re.IGNORECASE)
     files = [f for f in os.listdir(folder) if file_re.match(f)]
     all_results = []
@@ -189,28 +200,32 @@ def main(folder, filename, function, output, format):
                 fi.write(json.dumps(all_results, ensure_ascii=False, indent=2))
         else:
             raise ValueError(f"Unsupported output format: {format}")
+    return output
 
 
-# r'C:\Users\Philippe\OneDrive - RL&Kids\Documents\Maisons\Suivi Solaire+Chauffage\Factures SIG'
+def _parse_args(args):
+    parser = argparse.ArgumentParser(
+        description="Parse solar production sheets and invoices from Services Industriels Genève (SIG).")
+    parser.add_argument('--path', '-p', type=str, help='Path to the PDF file to parse.', required=True)
+    parser.add_argument('--output', '-o', type=str,
+                        help='Path to the output file. Default is stdout. If the filename contains placeholders such as {date} and {time} then iso date and/or time are substituted.',
+                        default=None)
+    parser.add_argument('--format', '-f', type=str, default='json', help='Output format.')
+    parser.add_argument('--solar', '-s', action='store_true', help='Parse solar production sheets.')
+    parser.add_argument('--invoice', '-i', action='store_true', help='Parse invoices.')
+    parser.add_argument('--solar-sheet-name', type=str, help='Name of solar sheet files. Can contain wildcards.',
+                        default='Production*.pdf')
+    parser.add_argument('--invoice-sheet-name', type=str, help='Name of invoice files. Can contain wildcards.',
+                        default='Facture*.pdf')
 
-parser = argparse.ArgumentParser(
-    description="Parse solar production sheets and invoices from Services Industriels Genève (SIG).")
-parser.add_argument('--path', '-p', type=str, help='Path to the PDF file to parse.', required=True)
-parser.add_argument('--output', '-o', type=str,
-                    help='Path to the output file. Default is stdout. If the filename contains placeholders such as {date} and {time} then iso date and/or time are substituted.',
-                    default=None)
-parser.add_argument('--format', '-f', type=str, default='json', help='Output format.')
-parser.add_argument('--solar', '-s', action='store_true', help='Parse solar production sheets.')
-parser.add_argument('--invoice', '-i', action='store_true', help='Parse invoices.')
-parser.add_argument('--solar-sheet-name', type=str, help='Name of solar sheet files. Can contain wildcards.',
-                    default='Production*.pdf')
-parser.add_argument('--invoice-sheet-name', type=str, help='Name of invoice files. Can contain wildcards.',
-                    default='Facture*.pdf')
+    args = parser.parse_args()
 
-args = parser.parse_args()
+    print(json.dumps(args.__dict__, ensure_ascii=False, indent=2))
+    if args.solar:
+        results = run(args.path, args.solar_sheet_name, parse_solar_sheet, args.output, args.format)
+    elif args.invoice:
+        results = run(args.path, args.invoice_sheet_name, parse_invoice, args.output, args.format)
 
-print(json.dumps(args.__dict__, ensure_ascii=False, indent=2))
-if args.solar:
-    results = main(args.path, args.solar_sheet_name, parse_solar_sheet, args.output, args.format)
-elif args.invoice:
-    results = main(args.path, args.invoice_sheet_name, parse_invoice, args.output, args.format)
+
+if __name__ == '__main__':
+    _parse_args(sys.argv)
