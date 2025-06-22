@@ -7,14 +7,15 @@ from datetime import datetime
 
 import pdfplumber
 
-
 # French month abbreviations for date parsing
+months = ['jan', 'fév', 'mars', 'avr.', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc.']
+
+
 def french_month_to_number(month):
-    months = {
-        'jan' : '01', 'fév': '02', 'mars': '03', 'avr.': '04', 'mai': '05', 'juin': '06',
-        'juil': '07', 'août': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'déc.': '12'
-    }
-    return months.get(month.lower(), '01')
+    try:
+        return months.index(month.lower()) + 1
+    except ValueError:
+        return 1
 
 
 def parse_french_date(date_str):
@@ -24,22 +25,29 @@ def parse_french_date(date_str):
         day, month, year = parts
         month_num = french_month_to_number(month)
         year = '20' + year if len(year) == 2 else year
-        return f"{year}-{month_num.zfill(2)}-{day.zfill(2)}"
+        return datetime(int(year), month_num, int(day))
     return None
+
 
 def parse_ddmmyyyy(date_str):
     # Example: '28.09.2024' -> '2024-09-28'
     try:
-        return datetime.strptime(date_str, '%d.%m.%Y').strftime('%Y-%m-%d')
+        return datetime.strptime(date_str, '%d.%m.%Y')
     except Exception:
         return None
+
 
 def parse_date(date_str):
     parsed = parse_french_date(date_str)
     return parsed if parsed else parse_ddmmyyyy(date_str)
 
+
 def compilePattern(input):
     return re.compile(input.replace(r" ", r"\s"), re.DOTALL | re.IGNORECASE)
+
+
+def _x_float(x):
+    return float(x.replace(',', '.').replace("'", "")) if x else None
 
 
 def parse_solar_sheet(pdf_path):
@@ -76,16 +84,45 @@ def parse_solar_sheet(pdf_path):
                             date_to_iso = parse_date(header_match.group(1))
                         else:
                             date_from_iso = date_to_iso = None
-                    results.append({
-                        "file"     : pdf_path,
-                        "item"     : item,
-                        "date_from": date_from_iso,
-                        "date_to"  : date_to_iso,
-                        "Qty"      : float(qty),
-                        "price"    : float(price),
-                        "CHF"      : float(chf),
-                        "TVA"      : float(vta)
-                    })
+                    total_days = (date_to_iso - date_from_iso).days + 1
+                    qty_day = _x_float(qty) / total_days
+                    if date_from_iso.year < date_to_iso.year:
+                        days_1 = (datetime(date_from_iso.year + 1, 1, 1) - date_from_iso).days
+                        days_2 = (date_to_iso - datetime(date_from_iso.year, 1, 1)).days
+                        results.append({
+                            "file"     : pdf_path,
+                            "item"     : item,
+                            "date_from": date_from_iso.strftime('%Y-%m-%d'),
+                            "date_to"  : datetime(date_from_iso.year + 1, 12, 31).strftime('%Y-%m-%d'),
+                            "Qty"      : _x_float(qty),
+                            "Qty_day"  : qty_day,
+                            "price"    : _x_float(price),
+                            "CHF"      : _x_float(chf),
+                            "TVA"      : _x_float(vta)
+                        })
+                        results.append({
+                            "file"     : pdf_path,
+                            "item"     : item,
+                            "date_from": datetime(date_from_iso.year, 1, 1).strftime('%Y-%m-%d'),
+                            "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
+                            "Qty"      : _x_float(qty),
+                            "Qty_day"  : qty_day,
+                            "price"    : _x_float(price),
+                            "CHF"      : _x_float(chf),
+                            "TVA"      : _x_float(vta)
+                        })
+                    else:
+                        results.append({
+                            "file"     : pdf_path,
+                            "item"     : item,
+                            "date_from": date_from_iso.strftime('%Y-%m-%d'),
+                            "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
+                            "Qty"      : _x_float(qty),
+                            "Qty_day"  : qty_day,
+                            "price"    : _x_float(price),
+                            "CHF"      : _x_float(chf),
+                            "TVA"      : _x_float(vta)
+                        })
     return results
 
 
@@ -121,8 +158,6 @@ def parse_invoice(pdf_path):
             ("Water", "m3" + category,
              compilePattern(".*" + label + r".*?Forfait.*?m3 +dépassant +le +forfait +" + water_price))
         ]
-
-    xfloat = lambda x: float(x.replace(',', '.').replace("'", "")) if x else None
 
     header_date_from = header_date_to = None
     with pdfplumber.open(pdf_path) as pdf:
@@ -163,18 +198,52 @@ def parse_invoice(pdf_path):
                         date_to_iso = header_date_to
                     if not date_to_iso or not date_from_iso:
                         print('Dates not found', file=sys.stderr)
-                    results.append({
-                        "file"     : pdf_path,
-                        "item"     : item,
-                        "date_from": date_from_iso,
-                        "date_to"  : date_to_iso,
-                        "commodity": commodity,
-                        "Qty"      : xfloat(qty),
-                        "Uom"      : uom,
-                        "price"    : xfloat(price),
-                        "CHF"      : xfloat(chf),
-                        "TVA"      : xfloat(tva)
-                    })
+                    total_days = (date_to_iso - date_from_iso).days + 1
+                    qty_day = _x_float(qty) / total_days
+                    if date_from_iso.year < date_to_iso.year:
+                        days_1 = (datetime(date_from_iso.year + 1, 1, 1) - date_from_iso).days
+                        days_2 = (date_to_iso - datetime(date_from_iso.year, 1, 1)).days
+                        # split the record
+                        results.append({
+                            "file"     : pdf_path,
+                            "item"     : item,
+                            "date_from": date_from_iso.strftime('%Y-%m-%d'),
+                            "date_to"  : datetime(date_from_iso.year + 1, 12, 31).strftime('%Y-%m-%d'),
+                            "commodity": commodity,
+                            "Qty"      : qty_day * days_1,
+                            "Qty_day"  : qty_day,
+                            "Uom"      : uom,
+                            "price"    : _x_float(price),
+                            "CHF"      : _x_float(chf),
+                            "TVA"      : _x_float(tva)
+                        })
+                        results.append({
+                            "file"     : pdf_path,
+                            "item"     : item,
+                            "date_from": datetime(date_from_iso.year, 1, 1).strftime('%Y-%m-%d'),
+                            "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
+                            "commodity": commodity,
+                            "Qty"      : qty_day * days_2,
+                            "Qty_day"  : qty_day,
+                            "Uom"      : uom,
+                            "price"    : _x_float(price),
+                            "CHF"      : _x_float(chf),
+                            "TVA"      : _x_float(tva)
+                        })
+                    else:
+                        results.append({
+                            "file"     : pdf_path,
+                            "item"     : item,
+                            "date_from": date_from_iso.strftime('%Y-%m-%d'),
+                            "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
+                            "commodity": commodity,
+                            "Qty"      : _x_float(qty),
+                            "Qty_day"  : qty_day,
+                            "Uom"      : uom,
+                            "price"    : _x_float(price),
+                            "CHF"      : _x_float(chf),
+                            "TVA"      : _x_float(tva)
+                        })
     return results
 
 
