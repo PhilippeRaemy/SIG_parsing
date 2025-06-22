@@ -199,7 +199,8 @@ def parse_invoice(pdf_path):
                     if not date_to_iso or not date_from_iso:
                         print('Dates not found', file=sys.stderr)
                     total_days = (date_to_iso - date_from_iso).days + 1
-                    qty_day = _x_float(qty) / total_days
+                    qty_day = _x_float(qty) / total_days if qty else None # sometimes there's no quantity!
+
                     if date_from_iso.year < date_to_iso.year:
                         days_1 = (datetime(date_from_iso.year + 1, 1, 1) - date_from_iso).days
                         days_2 = (date_to_iso - datetime(date_from_iso.year, 1, 1)).days
