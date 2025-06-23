@@ -146,10 +146,10 @@ def months_generator(date_from: datetime, date_to: datetime):
 
 def parse_invoice(pdf_path):
     results = []
-    date_pattern = r"(\n *(?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
-    power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
-    water_price = r"[^\d]*?(?P<qty>[\d.,']+) *(?P<uom>jours|m3) (x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
-    water_price = r"(?P<qty>[\d.,']+) +(?P<uom>jours|m3) +(x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
+    date_pattern = r"(\n.*(?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
+    power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+).*" + date_pattern
+    water_price = r"[^\d]*?(?P<qty>[\d.,']+) *(?P<uom>jours|m3) (x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+).*" + date_pattern
+    water_price = r"(?P<qty>[\d.,']+) +(?P<uom>jours|m3) +(x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+).*" + date_pattern
     # Fallback: get header dates
     summary_date_pattern = compilePattern(
         r"période +:? *du (?P<dfrom>\d\d\.\d\d\.\d\d\d\d) +au +(?P<dto>\d\d\.\d\d\.\d\d\d\d)")
@@ -199,8 +199,10 @@ def parse_invoice(pdf_path):
                 header_date_to = parse_date(header_dic['dto'])
 
             for commodity, item, pattern in patterns:
-                if item == 'xxxx* Forfait_Water' and page.page_number == 3:
+                if item == 'Peak' and page.page_number == 2:
                     for test_pat in [water_price, pattern.pattern,
+                        r"pleines\s*?(?P<qty>[\d.,']+)\s*(?P<uom>kWh).*?x\s*(?P<price>[\d.,']+)\s*=\s*(?P<chf>[\d.,']+)\s*(?P<tva>[\d.,']+).*"
+                        r"(\n.*(?P<dfrom>\d{2}\.\d{2}\.\d{4})\s*au\s*(?P<dto>\d{2}\.\d{2}\.\d{4}))?",
                                      r"(?P<label>Production +et +distribution +Eau +Potable.*)\n",
                                      r"(?P<label>Production +et +distribution +Eau +Potable.*)\n\s*Forfait",
                                      r"(?P<label>Production +et +distribution +Eau +Potable.*)\n\s*Forfait.*\n.*\n(?P<next>.*)",

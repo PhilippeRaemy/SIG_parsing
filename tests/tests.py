@@ -7,6 +7,7 @@ from pdfminer.utils import isnumber
 
 import Parse
 from Parse import parse_invoice
+from data.detailed_test_data import data as detailed_test_data
 
 
 @pytest.mark.parametrize(
@@ -24,6 +25,7 @@ def test_invoices(filename):
     print(results)
 
 
+@pytest.mark.parametrize("test_data", detailed_test_data)
 def test_invoice_detailed(test_data):
     def compare(r, e):
         if isnumber(r) and isnumber(e):
