@@ -138,7 +138,7 @@ def months_generator(date_from: datetime, date_to: datetime):
         ed = datetime(ny, nm, 1) - timedelta(days=1)
         if ed > date_to:
             ed = date_to
-        yield date_from, ed
+        yield date_from, ed, (ed - date_from).days + 1
         date_from = datetime(ny, nm, 1)
         y = ny
         m = nm
