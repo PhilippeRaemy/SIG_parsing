@@ -43,7 +43,7 @@ def parse_date(date_str):
 
 
 def compilePattern(input):
-    return re.compile(input.replace(r" ", r"\s"), re.MULTILINE | re.IGNORECASE)
+    return re.compile(input.replace(r" ", r"\s"), re.IGNORECASE)
 
 
 def _x_float(x):
@@ -146,9 +146,10 @@ def months_generator(date_from: datetime, date_to: datetime):
 
 def parse_invoice(pdf_path):
     results = []
-    date_pattern = r"(^ *(?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
+    date_pattern = r"(\n *(?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
     power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
     water_price = r"[^\d]*?(?P<qty>[\d.,']+) *(?P<uom>jours|m3) (x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
+    water_price = r"(?P<qty>[\d.,']+) +(?P<uom>jours|m3) +(x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
     # Fallback: get header dates
     summary_date_pattern = compilePattern(
         r"période +:? *du (?P<dfrom>\d\d\.\d\d\.\d\d\d\d) +au +(?P<dto>\d\d\.\d\d\.\d\d\d\d)")
@@ -161,20 +162,21 @@ def parse_invoice(pdf_path):
         ("Power", "Collectivity", compilePattern(r"collectivités +publiques +([?P<chf>\d.,']+) *(?P<tva>[\d.,'])[^\d]*"
                                                  + date_pattern + r"[^\d]*([?P<price>\d.,']+) *%")),
         ("Power", "FederalTax", compilePattern(r"fédéral" + power_price)),
+        ("Power", "FederalReserve", compilePattern(r"Confédération" + power_price)),
         ("Water", "FederalTax", compilePattern(r"fédérale" + water_price)),
     ]
     for label, category in [
-        ("Production et distribution Eau Potable", "Water"),
-        ("Taxe d'épuration", "Cleansing"),
-        ("Taxe d'utilisation", "WaterNet"),
+        (r"(?P<label>Production +et +distribution +Eau +Potable.*)\n", "Water"),
+        (r"(?P<label>Taxe +d'épuration.*)\n", "Cleansing"),
+        (r"(?P<label>Taxe +d'utilisation.*)\n", "WaterNet"),
     ]:
         patterns += [
             ("Water", "Forfait_" + category,
-             compilePattern(".*" + label + r".*?Forfait +de +la +tranche +" + water_price)),
+             compilePattern(label + r" *Forfait +.*" + water_price)),
             ("Water", "Forfait_m3_" + category,
-             compilePattern(".*" + label + r".*?Forfait.*?m3 +compris +dans +le +forfait +" + water_price)),
-            ("Water", "m3" + category,
-             compilePattern(".*" + label + r".*?Forfait.*?m3 +dépassant +le +forfait +" + water_price))
+             compilePattern(label + r" *Forfait.*\n.*\n.*m3 +compris +dans +le +forfait +" + water_price)),
+            ("Water", "Extra_m3_" + category,
+             compilePattern(label + r" *Forfait.*\n.*\n.*\n.*m3 +dépassant +le +forfait +" + water_price))
         ]
 
     header_date_from = header_date_to = None
@@ -197,6 +199,18 @@ def parse_invoice(pdf_path):
                 header_date_to = parse_date(header_dic['dto'])
 
             for commodity, item, pattern in patterns:
+                if item == 'xxxx* Forfait_Water' and page.page_number == 3:
+                    for test_pat in [water_price, pattern.pattern,
+                                     r"(?P<label>Production +et +distribution +Eau +Potable.*)\n",
+                                     r"(?P<label>Production +et +distribution +Eau +Potable.*)\n\s*Forfait",
+                                     r"(?P<label>Production +et +distribution +Eau +Potable.*)\n\s*Forfait.*\n.*\n(?P<next>.*)",
+                                     r"(?P<label>Production +et +distribution +Eau +Potable.*)\n\s*Forfait.*\n.*\n.*\n(?P<nextnext>.*)",
+                                     ]:
+                        print('-' * 50)
+                        print(test_pat)
+                        print([{'match': m, 'dict': m.groupdict() if m else None}
+                               for m in compilePattern(test_pat).finditer(text)])
+                    print('*' * 50)
                 for match in pattern.finditer(text):
                     group_dict = match.groupdict()
                     qty = group_dict.get('qty')
@@ -220,54 +234,24 @@ def parse_invoice(pdf_path):
                     qty_day = _x_float(qty) / total_days if qty else None  # sometimes there's no quantity!
                     chf_day = _x_float(chf) / total_days if chf else None  # sometimes there's no quantity!
 
-                    month_start = date_from_iso
-
-                    if date_from_iso.year < date_to_iso.year:
-                        days_1 = (datetime(date_to_iso.year, 1, 1) - date_from_iso).days
-                        days_2 = (date_to_iso - datetime(date_to_iso.year, 1, 1)).days + 1
-                        # split the record
-                        new_results = [
-                            {
-                                "file"     : pdf_path,
-                                "item"     : item,
-                                "date_from": date_from_iso.strftime('%Y-%m-%d'),
-                                "date_to"  : datetime(date_from_iso.year + 1, 12, 31).strftime('%Y-%m-%d'),
-                                "commodity": commodity,
-                                "Qty"      : qty_day * days_1,
-                                "Qty_day"  : qty_day,
-                                "Uom"      : uom,
-                                "price"    : _x_float(price),
-                                "CHF"      : chf_day * days_1,
-                                "TVA"      : _x_float(tva)
-                            },
-                            {
-                                "file"     : pdf_path,
-                                "item"     : item,
-                                "date_from": datetime(date_from_iso.year, 1, 1).strftime('%Y-%m-%d'),
-                                "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
-                                "commodity": commodity,
-                                "Qty"      : qty_day * days_2,
-                                "Qty_day"  : qty_day,
-                                "Uom"      : uom,
-                                "price"    : _x_float(price),
-                                "CHF"      : chf_day * days_2,
-                                "TVA"      : _x_float(tva)
-                            }]
-                    else:
-                        new_results = [{
-                            "file"     : pdf_path,
-                            "item"     : item,
-                            "date_from": date_from_iso.strftime('%Y-%m-%d'),
-                            "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
-                            "commodity": commodity,
-                            "Qty"      : _x_float(qty),
-                            "Qty_day"  : qty_day,
-                            "Uom"      : uom,
-                            "price"    : _x_float(price),
-                            "CHF"      : _x_float(chf),
-                            "TVA"      : _x_float(tva)
-                        }]
-                    print(['\n'.join(json.dumps(r) for r in new_results)])
+                    new_results = [{
+                        "file"     : pdf_path,
+                        "item"     : item,
+                        "date_from": df.strftime('%Y-%m-%d'),
+                        "date_to"  : dt.strftime('%Y-%m-%d'),
+                        "commodity": commodity,
+                        "Qty"      : qty_day * d,
+                        "Days"     : d,
+                        "Qty_day"  : qty_day,
+                        "Uom"      : uom,
+                        "price"    : _x_float(price),
+                        "CHF"      : chf_day * d,
+                        "TVA"      : _x_float(tva)
+                    } for df, dt, d in months_generator(date_from_iso, date_to_iso)]
+                    print(
+                        f'# vvvvv {commodity}, {item}, {date_from_iso}, {date_to_iso}, {qty}, {uom}, {price} -> {chf}')
+                    print('\n'.join(json.dumps(r) + ',' for r in new_results))
+                    print(f'# ^^^^^^^^^^^^^^^^^^^^^^^^^')
                     results += new_results
 
     return results

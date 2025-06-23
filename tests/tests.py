@@ -35,19 +35,28 @@ def test_invoice_detailed(test_data):
     results = parse_invoice(os.path.join('..', 'tests', 'data', test_data['file']))
     for expected in test_data['data']:
         for result in results:
-            keys_match = [(k, expected.get(k), result.get(k)) for k in keys]
-            if sum([1 for k, e, r in keys_match if e == r]) == len(keys):
-                result['used'] = result.get('used', 0) + 1
+            keys_match = {k: {'e': e, 'r': r, 'c': compare(r, e)}
+                          for k, e, r in (
+                              (k, expected.get(k), result.get(k))
+                              for k in keys)}
+
+            if sum([1 for v in keys_match.values() if v['c']]) == len(keys):
+
                 values_match = values_match = {k: {'e': e, 'r': r, 'c': compare(r, e)}
                                                for k, e, r in (
                                                    (k, expected.get(k), result.get(k))
                                                    for k in values)}
 
-                if not sum([v['c'] for v in values_match.values()]) == len(values):
-                    assert False, json.dumps(values_match)
+                if sum([v['c'] for v in values_match.values()]) == len(values):
+                    result['used'] = result.get('used', 0) + 1
+                    expected['matched'] = expected.get('matched', 0) + 1
+        if not expected.get('matched', 0) == 1:
+            assert False, json.dumps({**keys_match, **values_match})
 
+    assert [r for r in test_data['data'] if not r.get('matched')] == []  # all expectations matched
+    assert [r for r in test_data['data'] if r.get('matched', 0) > 1] == []  # no expectation matched twice
     assert [r for r in results if not r.get('used')] == []  # all results used
-    assert [r for r in results if r.get('used', 0) > 1]  # no  results used twice
+    assert [r for r in results if r.get('used', 0) > 1] == []  # no  results used twice
 
     print(results)
 

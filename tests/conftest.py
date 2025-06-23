@@ -3,248 +3,143 @@ import pytest
 
 @pytest.fixture
 def test_data():
+    # @formatter:off
     return {
         "file": "Facture 2025-02.pdf",
         "data": [
-            {
-                "item"     : "Forfait_Water",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 25,
-                "Qty_day"  : 1,
-                "Uom"      : "jours",
-                "price"    : 18.8344594594595,
-                "CHF"      : 55.75,
-                "TVA"      : 2.6
-            },
-            {
-                "item"     : "Forfait_Water",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 49,
-                "Qty_day"  : 0.510204081632653,
-                "Uom"      : "jours",
-                "price"    : 36.9155405405405,
-                "CHF"      : 55.75,
-                "TVA"      : 2.6
-            },
-            {
-                "item"     : "Forfait_m3_Water",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 6.75675675675676,
-                "Qty_day"  : 0.27027027027027,
-                "Uom"      : "m3",
-                "price"    : 0,
-                "CHF"      : 0,
-                "TVA"      : 2.6
-            },
-            {
-                "item"     : "Forfait_m3_Water",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 13.2432432432432,
-                "Qty_day"  : 0.137892995035852,
-                "Uom"      : "m3",
-                "price"    : 0,
-                "CHF"      : 0,
-                "TVA"      : 2.6
-            },
-            {
-                "item"     : "m3Water",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 16.5540540540541,
-                "Qty_day"  : 0.662162162162162,
-                "Uom"      : "m3",
-                "price"    : 38.4054054054054,
-                "CHF"      : 113.68,
-                "TVA"      : 2.6
-            },
-            {
-                "item"     : "m3Water",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 32.4459459459459,
-                "Qty_day"  : 0.337837837837838,
-                "Uom"      : "m3",
-                "price"    : 75.2745945945946,
-                "CHF"      : 113.68,
-                "TVA"      : 2.6
-            },
-            {
-                "item"     : "Forfait_Cleansing",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 25,
-                "Qty_day"  : 1,
-                "Uom"      : "jours",
-                "price"    : 17.8074324324324,
-                "CHF"      : 52.71,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "Forfait_Cleansing",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 49,
-                "Qty_day"  : 0.510204081632653,
-                "Uom"      : "jours",
-                "price"    : 34.9025675675676,
-                "CHF"      : 52.71,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "Forfait_m3_Cleansing",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 6.75675675675676,
-                "Qty_day"  : 0.27027027027027,
-                "Uom"      : "m3",
-                "price"    : 0,
-                "CHF"      : 0,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "Forfait_m3_Cleansing",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 13.2432432432432,
-                "Qty_day"  : 0.137892995035852,
-                "Uom"      : "m3",
-                "price"    : 0,
-                "CHF"      : 0,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "m3Cleansing",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 16.5540540540541,
-                "Qty_day"  : 0.662162162162162,
-                "Uom"      : "m3",
-                "price"    : 37.7432432432432,
-                "CHF"      : 111.72,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "m3Cleansing",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 32.4459459459459,
-                "Qty_day"  : 0.337837837837838,
-                "Uom"      : "m3",
-                "price"    : 73.9767567567568,
-                "CHF"      : 111.72,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "Forfait_WaterNet",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 25,
-                "Qty_day"  : 1,
-                "Uom"      : "jours",
-                "price"    : 3.01351351351351,
-                "CHF"      : 8.92,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "Forfait_WaterNet",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 49,
-                "Qty_day"  : 0.510204081632653,
-                "Uom"      : "jours",
-                "price"    : 5.90648648648649,
-                "CHF"      : 8.92,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "Forfait_m3_WaterNet",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 6.75675675675676,
-                "Qty_day"  : 0.27027027027027,
-                "Uom"      : "m3",
-                "price"    : 0,
-                "CHF"      : 0,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "Forfait_m3_WaterNet",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 13.2432432432432,
-                "Qty_day"  : 0.137892995035852,
-                "Uom"      : "m3",
-                "price"    : 0,
-                "CHF"      : 0,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "m3WaterNet",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 16.5540540540541,
-                "Qty_day"  : 0.662162162162162,
-                "Uom"      : "m3",
-                "price"    : 6.62162162162162,
-                "CHF"      : 19.6,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "m3WaterNet",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 32.4459459459459,
-                "Qty_day"  : 0.337837837837838,
-                "Uom"      : "m3",
-                "price"    : 12.9783783783784,
-                "CHF"      : 19.6,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "FederalTax",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 15.5405405405405,
-                "Qty_day"  : 0.621621621621622,
-                "Uom"      : "m3",
-                "price"    : 1.55405405405405,
-                "CHF"      : 4.6,
-                "TVA"      : 8.1
-            },
-            {
-                "item"     : "FederalTax",
-                "date_from": "2024-12-07",
-                "date_to"  : "2024-12-31",
-                "commodity": "Water",
-                "Qty"      : 30.4594594594595,
-                "Qty_day"  : 0.31715388858246,
-                "Uom"      : "m3",
-                "price"    : 3.04594594594595,
-                "CHF"      : 4.6,
-                "TVA"      : 8.1
-            }
+            # vvvvv Power, Peak, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 1'743, kWh, 0.1530 -> 266.68
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 36.3125, "Days": 3, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.153, "CHF": 5.555833333333333, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 375.22916666666663, "Days": 31, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.153, "CHF": 57.41027777777778, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 363.125, "Days": 30, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.153, "CHF": 55.55833333333333, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 375.22916666666663, "Days": 31, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.153, "CHF": 57.41027777777778, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 375.22916666666663, "Days": 31, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.153, "CHF": 57.41027777777778, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 217.875, "Days": 18, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.153, "CHF": 33.335, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, Peak, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 1'238, kWh, 0.1270 -> 157.23
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 25.791666666666664, "Days": 3, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.127, "CHF": 3.275625, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 266.51388888888886, "Days": 31, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.127, "CHF": 33.848124999999996, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 257.91666666666663, "Days": 30, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.127, "CHF": 32.756249999999994, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 266.51388888888886, "Days": 31, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.127, "CHF": 33.848124999999996, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 266.51388888888886, "Days": 31, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.127, "CHF": 33.848124999999996, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 154.75, "Days": 18, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.127, "CHF": 19.65375, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, Peak, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 1'743, kWh, 0.1275 -> 222.23
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 36.3125, "Days": 3, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.1275, "CHF": 4.629791666666666, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 375.22916666666663, "Days": 31, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.1275, "CHF": 47.84118055555555, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 363.125, "Days": 30, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.1275, "CHF": 46.297916666666666, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 375.22916666666663, "Days": 31, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.1275, "CHF": 47.84118055555555, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 375.22916666666663, "Days": 31, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.1275, "CHF": 47.84118055555555, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 217.875, "Days": 18, "Qty_day": 12.104166666666666, "Uom": "kWh", "price": 0.1275, "CHF": 27.77875, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, Peak, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 1'238, kWh, 0.1260 -> 155.99
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 25.791666666666664, "Days": 3, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.126, "CHF": 3.249791666666667, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 266.51388888888886, "Days": 31, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.126, "CHF": 33.58118055555556, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 257.91666666666663, "Days": 30, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.126, "CHF": 32.49791666666667, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 266.51388888888886, "Days": 31, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.126, "CHF": 33.58118055555556, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 266.51388888888886, "Days": 31, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.126, "CHF": 33.58118055555556, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Peak", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 154.75, "Days": 18, "Qty_day": 8.597222222222221, "Uom": "kWh", "price": 0.126, "CHF": 19.49875, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, Offpeak, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 2'388, kWh, 0.1040 -> 248.35
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 49.75, "Days": 3, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.104, "CHF": 5.173958333333333, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 514.0833333333333, "Days": 31, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.104, "CHF": 53.46423611111111, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 497.49999999999994, "Days": 30, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.104, "CHF": 51.739583333333336, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 514.0833333333333, "Days": 31, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.104, "CHF": 53.46423611111111, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 514.0833333333333, "Days": 31, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.104, "CHF": 53.46423611111111, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 298.5, "Days": 18, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.104, "CHF": 31.04375, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, Offpeak, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 1'704, kWh, 0.0870 -> 148.25
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 35.5, "Days": 3, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.087, "CHF": 3.0885416666666665, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 366.83333333333337, "Days": 31, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.087, "CHF": 31.914930555555554, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 355.0, "Days": 30, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.087, "CHF": 30.885416666666664, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 366.83333333333337, "Days": 31, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.087, "CHF": 31.914930555555554, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 366.83333333333337, "Days": 31, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.087, "CHF": 31.914930555555554, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 213.0, "Days": 18, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.087, "CHF": 18.53125, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, Offpeak, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 2'388, kWh, 0.0775 -> 185.07
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 49.75, "Days": 3, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.0775, "CHF": 3.855625, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 514.0833333333333, "Days": 31, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.0775, "CHF": 39.841458333333335, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 497.49999999999994, "Days": 30, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.0775, "CHF": 38.55625, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 514.0833333333333, "Days": 31, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.0775, "CHF": 39.841458333333335, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 514.0833333333333, "Days": 31, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.0775, "CHF": 39.841458333333335, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 298.5, "Days": 18, "Qty_day": 16.583333333333332, "Uom": "kWh", "price": 0.0775, "CHF": 23.13375, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, Offpeak, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 1'704, kWh, 0.0765 -> 130.36
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 35.5, "Days": 3, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.0765, "CHF": 2.7158333333333333, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 366.83333333333337, "Days": 31, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.0765, "CHF": 28.063611111111115, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 355.0, "Days": 30, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.0765, "CHF": 27.158333333333335, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 366.83333333333337, "Days": 31, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.0765, "CHF": 28.063611111111115, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 366.83333333333337, "Days": 31, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.0765, "CHF": 28.063611111111115, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Offpeak", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 213.0, "Days": 18, "Qty_day": 11.833333333333334, "Uom": "kWh", "price": 0.0765, "CHF": 16.295, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, FederalTax, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 7'073, kWh, 0.0230 -> 162.68
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalTax", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 147.35416666666669, "Days": 3, "Qty_day": 49.11805555555556, "Uom": "kWh", "price": 0.023, "CHF": 3.389166666666667, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalTax", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 1522.6597222222222, "Days": 31, "Qty_day": 49.11805555555556, "Uom": "kWh", "price": 0.023, "CHF": 35.02138888888889, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalTax", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 1473.5416666666667, "Days": 30, "Qty_day": 49.11805555555556, "Uom": "kWh", "price": 0.023, "CHF": 33.891666666666666, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalTax", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 1522.6597222222222, "Days": 31, "Qty_day": 49.11805555555556, "Uom": "kWh", "price": 0.023, "CHF": 35.02138888888889, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalTax", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 1522.6597222222222, "Days": 31, "Qty_day": 49.11805555555556, "Uom": "kWh", "price": 0.023, "CHF": 35.02138888888889, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalTax", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 884.125, "Days": 18, "Qty_day": 49.11805555555556, "Uom": "kWh", "price": 0.023, "CHF": 20.335, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, FederalReserve, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 4'131, kWh, 0.0120 -> 49.57
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 86.0625, "Days": 3, "Qty_day": 28.6875, "Uom": "kWh", "price": 0.012, "CHF": 1.0327083333333333, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 889.3125, "Days": 31, "Qty_day": 28.6875, "Uom": "kWh", "price": 0.012, "CHF": 10.671319444444444, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 860.625, "Days": 30, "Qty_day": 28.6875, "Uom": "kWh", "price": 0.012, "CHF": 10.327083333333334, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 889.3125, "Days": 31, "Qty_day": 28.6875, "Uom": "kWh", "price": 0.012, "CHF": 10.671319444444444, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 889.3125, "Days": 31, "Qty_day": 28.6875, "Uom": "kWh", "price": 0.012, "CHF": 10.671319444444444, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 516.375, "Days": 18, "Qty_day": 28.6875, "Uom": "kWh", "price": 0.012, "CHF": 6.19625, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Power, FederalReserve, 2024-09-28 00:00:00, 2025-02-18 00:00:00, 2'942, kWh, 0.0023 -> 6.77
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2024-09-28", "date_to": "2024-09-30", "commodity": "Power", "Qty": 61.29166666666667, "Days": 3, "Qty_day": 20.430555555555557, "Uom": "kWh", "price": 0.0023, "CHF": 0.14104166666666665, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2024-10-01", "date_to": "2024-10-31", "commodity": "Power", "Qty": 633.3472222222223, "Days": 31, "Qty_day": 20.430555555555557, "Uom": "kWh", "price": 0.0023, "CHF": 1.4574305555555553, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2024-11-01", "date_to": "2024-11-30", "commodity": "Power", "Qty": 612.9166666666667, "Days": 30, "Qty_day": 20.430555555555557, "Uom": "kWh", "price": 0.0023, "CHF": 1.4104166666666664, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2024-12-01", "date_to": "2024-12-31", "commodity": "Power", "Qty": 633.3472222222223, "Days": 31, "Qty_day": 20.430555555555557, "Uom": "kWh", "price": 0.0023, "CHF": 1.4574305555555553, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Power", "Qty": 633.3472222222223, "Days": 31, "Qty_day": 20.430555555555557, "Uom": "kWh", "price": 0.0023, "CHF": 1.4574305555555553, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "FederalReserve", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Power", "Qty": 367.75, "Days": 18, "Qty_day": 20.430555555555557, "Uom": "kWh", "price": 0.0023, "CHF": 0.84625, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Water, Forfait_Water, 2024-12-07 00:00:00, 2025-02-18 00:00:00, 4, jours, 0.7534 -> 55.75
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_Water", "date_from": "2024-12-07", "date_to": "2024-12-31", "commodity": "Water", "Qty": 1.3513513513513513, "Days": 25, "Qty_day": 0.05405405405405406, "Uom": "jours", "price": 0.7534, "CHF": 18.83445945945946, "TVA": 2.6},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_Water", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Water", "Qty": 1.6756756756756759, "Days": 31, "Qty_day": 0.05405405405405406, "Uom": "jours", "price": 0.7534, "CHF": 23.35472972972973, "TVA": 2.6},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_Water", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Water", "Qty": 0.972972972972973, "Days": 18, "Qty_day": 0.05405405405405406, "Uom": "jours", "price": 0.7534, "CHF": 13.56081081081081, "TVA": 2.6},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Water, Forfait_m3_Water, 2024-12-07 00:00:00, 2025-02-18 00:00:00, 20, m3, None -> 0.00
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_m3_Water", "date_from": "2024-12-07", "date_to": "2024-12-31", "commodity": "Water", "Qty": 6.756756756756757, "Days": 25, "Qty_day": 0.2702702702702703, "Uom": "m3", "price": None, "CHF": 0.0, "TVA": 2.6},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_m3_Water", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Water", "Qty": 8.378378378378379, "Days": 31, "Qty_day": 0.2702702702702703, "Uom": "m3", "price": None, "CHF": 0.0, "TVA": 2.6},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_m3_Water", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Water", "Qty": 4.864864864864865, "Days": 18, "Qty_day": 0.2702702702702703, "Uom": "m3", "price": None, "CHF": 0.0, "TVA": 2.6},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Water, Extra_m3_Water, 2024-12-07 00:00:00, 2025-02-18 00:00:00, 49, m3, 2.3200 -> 113.68
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Extra_m3_Water", "date_from": "2024-12-07", "date_to": "2024-12-31", "commodity": "Water", "Qty": 16.554054054054053, "Days": 25, "Qty_day": 0.6621621621621622, "Uom": "m3", "price": 2.32, "CHF": 38.40540540540541, "TVA": 2.6},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Extra_m3_Water", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Water", "Qty": 20.527027027027028, "Days": 31, "Qty_day": 0.6621621621621622, "Uom": "m3", "price": 2.32, "CHF": 47.6227027027027, "TVA": 2.6},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Extra_m3_Water", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Water", "Qty": 11.91891891891892, "Days": 18, "Qty_day": 0.6621621621621622, "Uom": "m3", "price": 2.32, "CHF": 27.651891891891893, "TVA": 2.6},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Water, Forfait_Cleansing, 2024-12-07 00:00:00, 2025-02-18 00:00:00, 4, jours, 0.7123 -> 52.71
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_Cleansing", "date_from": "2024-12-07", "date_to": "2024-12-31", "commodity": "Water", "Qty": 1.3513513513513513, "Days": 25, "Qty_day": 0.05405405405405406, "Uom": "jours", "price": 0.7123, "CHF": 17.80743243243243, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_Cleansing", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Water", "Qty": 1.6756756756756759, "Days": 31, "Qty_day": 0.05405405405405406, "Uom": "jours", "price": 0.7123, "CHF": 22.081216216216216, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_Cleansing", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Water", "Qty": 0.972972972972973, "Days": 18, "Qty_day": 0.05405405405405406, "Uom": "jours", "price": 0.7123, "CHF": 12.821351351351352, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Water, Forfait_m3_Cleansing, 2024-12-07 00:00:00, 2025-02-18 00:00:00, 20, m3, None -> 0.00
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_m3_Cleansing", "date_from": "2024-12-07", "date_to": "2024-12-31", "commodity": "Water", "Qty": 6.756756756756757, "Days": 25, "Qty_day": 0.2702702702702703, "Uom": "m3", "price": None, "CHF": 0.0, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_m3_Cleansing", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Water", "Qty": 8.378378378378379, "Days": 31, "Qty_day": 0.2702702702702703, "Uom": "m3", "price": None, "CHF": 0.0, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_m3_Cleansing", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Water", "Qty": 4.864864864864865, "Days": 18, "Qty_day": 0.2702702702702703, "Uom": "m3", "price": None, "CHF": 0.0, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Water, Extra_m3_Cleansing, 2024-12-07 00:00:00, 2025-02-18 00:00:00, 49, m3, 2.2800 -> 111.72
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Extra_m3_Cleansing", "date_from": "2024-12-07", "date_to": "2024-12-31", "commodity": "Water", "Qty": 16.554054054054053, "Days": 25, "Qty_day": 0.6621621621621622, "Uom": "m3", "price": 2.28, "CHF": 37.74324324324324, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Extra_m3_Cleansing", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Water", "Qty": 20.527027027027028, "Days": 31, "Qty_day": 0.6621621621621622, "Uom": "m3", "price": 2.28, "CHF": 46.80162162162162, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Extra_m3_Cleansing", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Water", "Qty": 11.91891891891892, "Days": 18, "Qty_day": 0.6621621621621622, "Uom": "m3", "price": 2.28, "CHF": 27.175135135135132, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Water, Forfait_WaterNet, 2024-12-07 00:00:00, 2025-02-18 00:00:00, 4, jours, 0.1205 -> 8.92
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_WaterNet", "date_from": "2024-12-07", "date_to": "2024-12-31", "commodity": "Water", "Qty": 1.3513513513513513, "Days": 25, "Qty_day": 0.05405405405405406, "Uom": "jours", "price": 0.1205, "CHF": 3.0135135135135136, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_WaterNet", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Water", "Qty": 1.6756756756756759, "Days": 31, "Qty_day": 0.05405405405405406, "Uom": "jours", "price": 0.1205, "CHF": 3.736756756756757, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_WaterNet", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Water", "Qty": 0.972972972972973, "Days": 18, "Qty_day": 0.05405405405405406, "Uom": "jours", "price": 0.1205, "CHF": 2.1697297297297298, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Water, Forfait_m3_WaterNet, 2024-12-07 00:00:00, 2025-02-18 00:00:00, 20, m3, None -> 0.00
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_m3_WaterNet", "date_from": "2024-12-07", "date_to": "2024-12-31", "commodity": "Water", "Qty": 6.756756756756757, "Days": 25, "Qty_day": 0.2702702702702703, "Uom": "m3", "price": None, "CHF": 0.0, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_m3_WaterNet", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Water", "Qty": 8.378378378378379, "Days": 31, "Qty_day": 0.2702702702702703, "Uom": "m3", "price": None, "CHF": 0.0, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Forfait_m3_WaterNet", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Water", "Qty": 4.864864864864865, "Days": 18, "Qty_day": 0.2702702702702703, "Uom": "m3", "price": None, "CHF": 0.0, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
+            # vvvvv Water, Extra_m3_WaterNet, 2024-12-07 00:00:00, 2025-02-18 00:00:00, 49, m3, 0.4000 -> 19.60
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Extra_m3_WaterNet", "date_from": "2024-12-07", "date_to": "2024-12-31", "commodity": "Water", "Qty": 16.554054054054053, "Days": 25, "Qty_day": 0.6621621621621622, "Uom": "m3", "price": 0.4, "CHF": 6.621621621621622, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Extra_m3_WaterNet", "date_from": "2025-01-01", "date_to": "2025-01-31", "commodity": "Water", "Qty": 20.527027027027028, "Days": 31, "Qty_day": 0.6621621621621622, "Uom": "m3", "price": 0.4, "CHF": 8.21081081081081, "TVA": 8.1},
+            {"file": "..\\tests\\data\\Facture 2025-02.pdf", "item": "Extra_m3_WaterNet", "date_from": "2025-02-01", "date_to": "2025-02-18", "commodity": "Water", "Qty": 11.91891891891892, "Days": 18, "Qty_day": 0.6621621621621622, "Uom": "m3", "price": 0.4, "CHF": 4.767567567567568, "TVA": 8.1},
+            # ^^^^^^^^^^^^^^^^^^^^^^^^^
         ]
     }
+    # @formatter:on
