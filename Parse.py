@@ -3,7 +3,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pdfplumber
 
@@ -43,7 +43,7 @@ def parse_date(date_str):
 
 
 def compilePattern(input):
-    return re.compile(input.replace(r" ", r"\s"), re.DOTALL | re.IGNORECASE)
+    return re.compile(input.replace(r" ", r"\s"), re.MULTILINE | re.IGNORECASE)
 
 
 def _x_float(x):
@@ -89,7 +89,7 @@ def parse_solar_sheet(pdf_path):
                     if date_from_iso.year < date_to_iso.year:
                         days_1 = (datetime(date_from_iso.year + 1, 1, 1) - date_from_iso).days
                         days_2 = (date_to_iso - datetime(date_from_iso.year, 1, 1)).days
-                        results.append({
+                        new_results = [{
                             "file"     : pdf_path,
                             "item"     : item,
                             "date_from": date_from_iso.strftime('%Y-%m-%d'),
@@ -99,20 +99,20 @@ def parse_solar_sheet(pdf_path):
                             "price"    : _x_float(price),
                             "CHF"      : _x_float(chf),
                             "TVA"      : _x_float(vta)
-                        })
-                        results.append({
-                            "file"     : pdf_path,
-                            "item"     : item,
-                            "date_from": datetime(date_from_iso.year, 1, 1).strftime('%Y-%m-%d'),
-                            "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
-                            "Qty"      : _x_float(qty),
-                            "Qty_day"  : qty_day,
-                            "price"    : _x_float(price),
-                            "CHF"      : _x_float(chf),
-                            "TVA"      : _x_float(vta)
-                        })
+                        },
+                            {
+                                "file"     : pdf_path,
+                                "item"     : item,
+                                "date_from": datetime(date_from_iso.year, 1, 1).strftime('%Y-%m-%d'),
+                                "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
+                                "Qty"      : _x_float(qty),
+                                "Qty_day"  : qty_day,
+                                "price"    : _x_float(price),
+                                "CHF"      : _x_float(chf),
+                                "TVA"      : _x_float(vta)
+                            }]
                     else:
-                        results.append({
+                        new_results = [{
                             "file"     : pdf_path,
                             "item"     : item,
                             "date_from": date_from_iso.strftime('%Y-%m-%d'),
@@ -122,13 +122,31 @@ def parse_solar_sheet(pdf_path):
                             "price"    : _x_float(price),
                             "CHF"      : _x_float(chf),
                             "TVA"      : _x_float(vta)
-                        })
+                        }]
+                    print(['\n'.join(json.dumps(r) for r in new_results)])
+                    results += new_results
     return results
+
+
+def months_generator(date_from: datetime, date_to: datetime):
+    y = date_from.year
+    m = date_from.month
+    d = date_from.day
+    while date_from <= date_to:
+        ny = y if m < 12 else y + 1
+        nm = m + 1 if m < 12 else 1
+        ed = datetime(ny, nm, 1) - timedelta(days=1)
+        if ed > date_to:
+            ed = date_to
+        yield date_from, ed
+        date_from = datetime(ny, nm, 1)
+        y = ny
+        m = nm
 
 
 def parse_invoice(pdf_path):
     results = []
-    date_pattern = r"((?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
+    date_pattern = r"(^ *(?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
     power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
     water_price = r"[^\d]*?(?P<qty>[\d.,']+) *(?P<uom>jours|m3) (x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+)[^\d]*" + date_pattern
     # Fallback: get header dates
@@ -199,40 +217,44 @@ def parse_invoice(pdf_path):
                     if not date_to_iso or not date_from_iso:
                         print('Dates not found', file=sys.stderr)
                     total_days = (date_to_iso - date_from_iso).days + 1
-                    qty_day = _x_float(qty) / total_days if qty else None # sometimes there's no quantity!
+                    qty_day = _x_float(qty) / total_days if qty else None  # sometimes there's no quantity!
+                    chf_day = _x_float(chf) / total_days if chf else None  # sometimes there's no quantity!
+
+                    month_start = date_from_iso
 
                     if date_from_iso.year < date_to_iso.year:
-                        days_1 = (datetime(date_from_iso.year + 1, 1, 1) - date_from_iso).days
-                        days_2 = (date_to_iso - datetime(date_from_iso.year, 1, 1)).days
+                        days_1 = (datetime(date_to_iso.year, 1, 1) - date_from_iso).days
+                        days_2 = (date_to_iso - datetime(date_to_iso.year, 1, 1)).days + 1
                         # split the record
-                        results.append({
-                            "file"     : pdf_path,
-                            "item"     : item,
-                            "date_from": date_from_iso.strftime('%Y-%m-%d'),
-                            "date_to"  : datetime(date_from_iso.year + 1, 12, 31).strftime('%Y-%m-%d'),
-                            "commodity": commodity,
-                            "Qty"      : qty_day * days_1,
-                            "Qty_day"  : qty_day,
-                            "Uom"      : uom,
-                            "price"    : _x_float(price),
-                            "CHF"      : _x_float(chf),
-                            "TVA"      : _x_float(tva)
-                        })
-                        results.append({
-                            "file"     : pdf_path,
-                            "item"     : item,
-                            "date_from": datetime(date_from_iso.year, 1, 1).strftime('%Y-%m-%d'),
-                            "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
-                            "commodity": commodity,
-                            "Qty"      : qty_day * days_2,
-                            "Qty_day"  : qty_day,
-                            "Uom"      : uom,
-                            "price"    : _x_float(price),
-                            "CHF"      : _x_float(chf),
-                            "TVA"      : _x_float(tva)
-                        })
+                        new_results = [
+                            {
+                                "file"     : pdf_path,
+                                "item"     : item,
+                                "date_from": date_from_iso.strftime('%Y-%m-%d'),
+                                "date_to"  : datetime(date_from_iso.year + 1, 12, 31).strftime('%Y-%m-%d'),
+                                "commodity": commodity,
+                                "Qty"      : qty_day * days_1,
+                                "Qty_day"  : qty_day,
+                                "Uom"      : uom,
+                                "price"    : _x_float(price),
+                                "CHF"      : chf_day * days_1,
+                                "TVA"      : _x_float(tva)
+                            },
+                            {
+                                "file"     : pdf_path,
+                                "item"     : item,
+                                "date_from": datetime(date_from_iso.year, 1, 1).strftime('%Y-%m-%d'),
+                                "date_to"  : date_to_iso.strftime('%Y-%m-%d'),
+                                "commodity": commodity,
+                                "Qty"      : qty_day * days_2,
+                                "Qty_day"  : qty_day,
+                                "Uom"      : uom,
+                                "price"    : _x_float(price),
+                                "CHF"      : chf_day * days_2,
+                                "TVA"      : _x_float(tva)
+                            }]
                     else:
-                        results.append({
+                        new_results = [{
                             "file"     : pdf_path,
                             "item"     : item,
                             "date_from": date_from_iso.strftime('%Y-%m-%d'),
@@ -244,7 +266,10 @@ def parse_invoice(pdf_path):
                             "price"    : _x_float(price),
                             "CHF"      : _x_float(chf),
                             "TVA"      : _x_float(tva)
-                        })
+                        }]
+                    print(['\n'.join(json.dumps(r) for r in new_results)])
+                    results += new_results
+
     return results
 
 
