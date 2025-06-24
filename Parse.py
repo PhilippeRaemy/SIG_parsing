@@ -147,7 +147,7 @@ def months_generator(date_from: datetime, date_to: datetime):
 def parse_invoice(pdf_path):
     results = []
     date_pattern = r"(\n.*(?P<dfrom>\d{2}\.\d{2}\.\d{4}) *au *(?P<dto>\d{2}\.\d{2}\.\d{4}))?"
-    power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+).*" + date_pattern
+    power_price = r" *?(?P<qty>[\d.,']+) *(?P<uom>kWh).*?x *(?P<price>[\d.,']+) *= *(?P<chf>[\d.,']+) +(?P<tva>[\d.,']+)?.*" + date_pattern
     water_price = r"[^\d]*?(?P<qty>[\d.,']+) *(?P<uom>jours|m3) (x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+).*" + date_pattern
     water_price = r"(?P<qty>[\d.,']+) +(?P<uom>jours|m3) +(x +(?P<price>[\d.,']+))? *= *(?P<chf>[\d.,']+) *(?P<tva>[\d.,']+).*" + date_pattern
     # Fallback: get header dates
@@ -159,8 +159,9 @@ def parse_invoice(pdf_path):
     patterns = [
         ("Power", "Peak", compilePattern(r"pleines" + power_price)),
         ("Power", "Offpeak", compilePattern(r"douces" + power_price)),
-        ("Power", "Collectivity", compilePattern(r"collectivités +publiques +([?P<chf>\d.,']+) *(?P<tva>[\d.,'])[^\d]*"
-                                                 + date_pattern + r"[^\d]*([?P<price>\d.,']+) *%")),
+        ("Power", "Collectivity",
+         compilePattern(r"collectivités +publiques +(?P<chf>[\d.,']+) +(?P<tva>[\d.,'])?[^\d\n]*"
+                        + date_pattern)),
         ("Power", "FederalTax", compilePattern(r"fédéral" + power_price)),
         ("Power", "FederalReserve", compilePattern(r"Confédération" + power_price)),
         ("Water", "FederalTax", compilePattern(r"fédérale" + water_price)),
@@ -201,8 +202,8 @@ def parse_invoice(pdf_path):
             for commodity, item, pattern in patterns:
                 if item == 'Peak' and page.page_number == 2:
                     for test_pat in [water_price, pattern.pattern,
-                        r"pleines\s*?(?P<qty>[\d.,']+)\s*(?P<uom>kWh).*?x\s*(?P<price>[\d.,']+)\s*=\s*(?P<chf>[\d.,']+)\s*(?P<tva>[\d.,']+).*"
-                        r"(\n.*(?P<dfrom>\d{2}\.\d{2}\.\d{4})\s*au\s*(?P<dto>\d{2}\.\d{2}\.\d{4}))?",
+                                     r"pleines\s*?(?P<qty>[\d.,']+)\s*(?P<uom>kWh).*?x\s*(?P<price>[\d.,']+)\s*=\s*(?P<chf>[\d.,']+)\s*(?P<tva>[\d.,']+).*"
+                                     r"(\n.*(?P<dfrom>\d{2}\.\d{2}\.\d{4})\s*au\s*(?P<dto>\d{2}\.\d{2}\.\d{4}))?",
                                      r"(?P<label>Production +et +distribution +Eau +Potable.*)\n",
                                      r"(?P<label>Production +et +distribution +Eau +Potable.*)\n\s*Forfait",
                                      r"(?P<label>Production +et +distribution +Eau +Potable.*)\n\s*Forfait.*\n.*\n(?P<next>.*)",
@@ -233,9 +234,15 @@ def parse_invoice(pdf_path):
                     if not date_to_iso or not date_from_iso:
                         print('Dates not found', file=sys.stderr)
                     total_days = (date_to_iso - date_from_iso).days + 1
+                    if qty is None and uom is None:
+                        uom = 'CHF'
+                        qty = chf
+
                     qty_day = _x_float(qty) / total_days if qty else None  # sometimes there's no quantity!
                     chf_day = _x_float(chf) / total_days if chf else None  # sometimes there's no quantity!
 
+                    if not qty_day:
+                        print('No qty!')
                     new_results = [{
                         "file"     : pdf_path,
                         "item"     : item,
@@ -265,11 +272,16 @@ def run(folder, filename, function, output, format):
     all_results = []
     for file in files:
         path = os.path.join(folder, file)
-        all_results.extend(function(path))
+        try:
+            all_results.extend(function(path))
+        except Exception as ex:
+            print(f"Exception while processing {path} : {ex}", file=sys.stderr)
+            return []
+
     print(json.dumps(all_results, ensure_ascii=False, indent=2))
     if not all_results:
         print(f"No results found in {folder} for pattern {filename}")
-        return
+        return []
     if output:
         output = output.replace('{date}', datetime.now().strftime('%Y-%m-%d')).replace('{time}',
                                                                                        datetime.now().strftime(

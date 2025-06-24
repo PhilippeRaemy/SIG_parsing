@@ -27,6 +27,8 @@ def test_invoices(filename):
 
 @pytest.mark.parametrize("test_data", detailed_test_data)
 def test_invoice_detailed(test_data):
+    # if not test_data['file'] == 'Facture 2019-12.pdf':
+    #     return
     def compare(r, e):
         if isnumber(r) and isnumber(e):
             return 1 if abs(r - e) < 0.01 else 0
